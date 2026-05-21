@@ -3,6 +3,10 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    # Daily at 06:00 UTC (09:00 EEST) — refreshes the YouTube RSS snapshot
+    # that `scripts/fetch-videos.mjs` bakes into the build.
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:

@@ -60,9 +60,16 @@ Tailwind v4 with CSS-first config in `src/styles.css` (`@import "tailwindcss"`, 
 
 `CookieBanner` persists the choice to `localStorage` under the key `fg-cookie-consent` (`accepted` | `rejected`). No analytics scripts are loaded — the banner is informational and a placeholder for future tracking.
 
-### YouTube content
+### YouTube content (build-time RSS)
 
-Currently **static thumbnails only** (see `heroVideos` / `recentVideos` arrays in `src/routes/index.tsx`). The previous live YouTube RSS integration was removed because (a) the SSR server function went away with the stack migration, and (b) YouTube's `feeds/videos.xml` endpoint can't be called from a browser due to CORS. If a live feed is needed again, it must run through a small serverless proxy (Cloudflare Worker / Netlify Function / etc.) that fronts the RSS endpoint and adds permissive CORS headers.
+The homepage shows the channel's actual latest videos by fetching the RSS feed **at build time**, not at request time. The pipeline:
+
+1. `scripts/fetch-videos.mjs` (Node script) hits `https://www.youtube.com/feeds/videos.xml?channel_id=UCEM8mimgOIJZK46kpKThl3Q`, parses up to 12 entries with regex, writes `src/lib/latest-videos.json`. CORS doesn't apply because this runs in Node, not the browser.
+2. `package.json` wires it as a `prebuild` and `predev` hook, so `npm run dev` and `npm run build` both regenerate the snapshot first.
+3. `src/routes/index.tsx` does `import latestVideos from "@/lib/latest-videos.json"` — Vite inlines the JSON into the bundle. Real `<img>` thumbnails (`i.ytimg.com/vi/<id>/hqdefault.jpg`) render in `VideoThumb`. If the script fails (network down during CI) it still writes a valid empty file and the homepage falls back to the `gradientHero` / `gradientRecent` placeholder cards.
+4. `.github/workflows/deploy.yml` has a daily cron (`"0 6 * * *"`, 06:00 UTC) on top of the push trigger, so new videos appear within 24h without anyone pushing code.
+
+`src/lib/latest-videos.json` is **gitignored** — never commit it. If you need to refresh thumbnails locally, just `npm run build` (or run the script directly: `node scripts/fetch-videos.mjs`).
 
 ## Conventions
 

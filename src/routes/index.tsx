@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Youtube, TrendingUp, Briefcase, Wallet, Mic } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site/Chrome";
 import { VideoThumb } from "@/components/site/VideoThumb";
+import latestVideos from "@/lib/latest-videos.json";
 
 const YT = "https://www.youtube.com/@FinancialGreeks";
 const MAIL = "mailto:financialgreeksbusiness@gmail.com";
@@ -13,14 +14,17 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const heroVideos = [
+// Gradient placeholders rendered only when the build-time RSS fetch comes back
+// empty (network failure during the GH Actions run). With a healthy feed
+// `latestVideos.videos` is populated and these never appear.
+const gradientHero = [
   { title: "Πώς να ξεκινήσεις επενδύσεις στην Ελλάδα", gradient: "coral" as const },
   { title: "Φόροι 2026, explained", gradient: "violet" as const },
   { title: "Build in Greece — η νέα γενιά founders", gradient: "mint" as const },
   { title: "Κρυφά κόστη που σε τρώνε κάθε μήνα", gradient: "sun" as const },
 ];
 
-const recentVideos = [
+const gradientRecent = [
   { title: "Χρηματιστήριο Αθηνών — αξίζει το 2026;", gradient: "violet" as const },
   { title: "Από μισθωτός σε επιχειρηματίας", gradient: "coral" as const },
   { title: "ETF για αρχάριους — τι να προσέξεις", gradient: "mint" as const },
@@ -28,6 +32,10 @@ const recentVideos = [
   { title: "Crypto χωρίς θόρυβο — τα βασικά", gradient: "violet" as const },
   { title: "Το πρώτο σου budget σε 10 λεπτά", gradient: "coral" as const },
 ];
+
+const videos = latestVideos.videos;
+const heroVideos = videos.slice(0, 4);
+const recentVideos = videos.slice(0, 6);
 
 const tags = [
   "Επενδύσεις",
@@ -121,12 +129,45 @@ function Index() {
           <div className="relative lg:col-span-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-4 pt-8">
-                <VideoThumb {...heroVideos[0]} href={YT} badge="New" />
-                <VideoThumb {...heroVideos[1]} href={YT} />
+                {heroVideos[0] ? (
+                  <VideoThumb
+                    title={heroVideos[0].title}
+                    thumbnail={heroVideos[0].thumbnail}
+                    href={heroVideos[0].url}
+                    badge="New"
+                  />
+                ) : (
+                  <VideoThumb {...gradientHero[0]} href={YT} badge="New" />
+                )}
+                {heroVideos[1] ? (
+                  <VideoThumb
+                    title={heroVideos[1].title}
+                    thumbnail={heroVideos[1].thumbnail}
+                    href={heroVideos[1].url}
+                  />
+                ) : (
+                  <VideoThumb {...gradientHero[1]} href={YT} />
+                )}
               </div>
               <div className="space-y-4">
-                <VideoThumb {...heroVideos[2]} href={YT} />
-                <VideoThumb {...heroVideos[3]} href={YT} />
+                {heroVideos[2] ? (
+                  <VideoThumb
+                    title={heroVideos[2].title}
+                    thumbnail={heroVideos[2].thumbnail}
+                    href={heroVideos[2].url}
+                  />
+                ) : (
+                  <VideoThumb {...gradientHero[2]} href={YT} />
+                )}
+                {heroVideos[3] ? (
+                  <VideoThumb
+                    title={heroVideos[3].title}
+                    thumbnail={heroVideos[3].thumbnail}
+                    href={heroVideos[3].url}
+                  />
+                ) : (
+                  <VideoThumb {...gradientHero[3]} href={YT} />
+                )}
               </div>
             </div>
           </div>
@@ -276,9 +317,18 @@ function Index() {
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {recentVideos.map((t, i) => (
-              <VideoThumb key={i} title={t.title} gradient={t.gradient} href={YT} />
-            ))}
+            {recentVideos.length > 0
+              ? recentVideos.map((v) => (
+                  <VideoThumb
+                    key={v.id}
+                    title={v.title}
+                    thumbnail={v.thumbnail}
+                    href={v.url}
+                  />
+                ))
+              : gradientRecent.map((t, i) => (
+                  <VideoThumb key={i} title={t.title} gradient={t.gradient} href={YT} />
+                ))}
           </div>
 
           <div className="mt-12 flex flex-wrap justify-center gap-2">

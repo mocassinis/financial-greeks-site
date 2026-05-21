@@ -33,3 +33,6 @@ dist-ssr
 
 # Claude Code local state
 .claude/
+
+# Generated at build time by scripts/fetch-videos.mjs
+src/lib/latest-videos.json
