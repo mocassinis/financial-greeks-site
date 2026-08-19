@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { Youtube, Instagram, Linkedin } from "lucide-react";
 
+import fgLogo from "@/assets/fg-logo.png";
+
 const YT = "https://www.youtube.com/@FinancialGreeks";
 const IG = "https://www.instagram.com/financialgreeks/";
 const LI = "https://www.linkedin.com/company/financialeuropeans/";
@@ -10,13 +12,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
-        <Link to="/" className="group flex items-center gap-2">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-grad-coral shadow-glow">
-            <Youtube className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-          </span>
-          <span className="font-display text-base tracking-tight">
-            οι <span className="text-primary">Financial Greeks</span>
-          </span>
+        <Link to="/" className="group flex items-center" aria-label="οι Financial Greeks">
+          <img src={fgLogo} alt="Financial Greeks" className="h-10 w-auto md:h-12" />
         </Link>
         <a
           href={YT}
@@ -37,13 +34,8 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-ink">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-4 md:px-8">
         <div className="md:col-span-1">
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-grad-coral">
-              <Youtube className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-            </span>
-            <span className="font-display text-base">
-              οι <span className="text-primary">Financial Greeks</span>
-            </span>
+          <div className="flex items-center">
+            <img src={fgLogo} alt="Financial Greeks" className="h-12 w-auto" />
           </div>
           <p className="mt-4 max-w-md text-sm text-muted-foreground">
             Finance content brand για χρήματα, επενδύσεις και business στην Ελλάδα.

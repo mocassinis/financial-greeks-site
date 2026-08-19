@@ -23,7 +23,7 @@ Static deploy to cPanel / shared hosting. After `npm run build`, upload the **co
 - `index.html` — SPA shell
 - `assets/*.js`, `assets/*.css` — content-hashed bundles
 - `.htaccess` — Apache rewrite rules (copied from `public/.htaccess`)
-- `favicon.ico`
+- `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`, `og-image.png`
 
 **`.htaccess` is mandatory.** It rewrites every non-file path to `/index.html` so direct visits to `/privacy`, `/terms`, `/cookies`, `/corporate` actually load the app instead of 404'ing. If the host disables `.htaccess` overrides we'd have to fall back to hash routing (`/#/privacy`). The same file also sets long cache headers on hashed assets and `no-cache` on `index.html`.
 
@@ -55,6 +55,16 @@ shadcn/ui in `src/components/ui/` (configured via `components.json`: `style: "ne
 ### Styling
 
 Tailwind v4 with CSS-first config in `src/styles.css` (`@import "tailwindcss"`, `@theme inline { ... }`). Custom design tokens: `--coral`, `--mint`, `--ink`, `--surface`, plus gradient utilities (`bg-grad-coral`, etc.) and `shadow-glow`. Dark creator palette in oklch. Greek + Latin font subsets are loaded from Google Fonts in `index.html`.
+
+**Brand colour is blue.** The palette was rebranded from the original coral/red to the FG blue (`--primary` / `--coral` = `oklch(0.55 0.20 260)` ≈ `#1c69e3`). The token *names* `--coral` / `--mint` / `bg-grad-coral` were deliberately kept so the rest of the source didn't have to churn — **`--coral` holds blue, not coral.** Don't "fix" a component by swapping `bg-grad-coral` for something else; change the token in `:root` if the brand colour moves again. Everything on the site is token-driven, so `:root` is the only place colours live.
+
+### Branding assets
+
+- `src/assets/fg-logo.png` — the FG lockup (blue mark + white wordmark, transparent). Imported by `Chrome.tsx` and rendered in both the header (`h-10 md:h-12`) and the footer (`h-12`). The other `src/assets/fe-*.png` / `*.jpg` files are unused leftovers from the Financial Europeans template — nothing imports them, so Vite never bundles them.
+- `public/favicon.ico` (multi-size 16→256), `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png` — all derived from the brand avatar (FG mark on white with a diagonal accent).
+- `public/og-image.png` — 1200×630 social card (logo on the brand dark background). Referenced from `index.html` by **absolute** URL (`https://www.financialgreeks.gr/og-image.png`) because social crawlers won't resolve relative ones.
+
+Masters for all of these live in the client's "Financial Greeks Γραφιστικά" Google Drive folder; the site copies are downscaled derivatives, so regenerate from the masters rather than upscaling what's in the repo.
 
 ### Cookie consent
 
