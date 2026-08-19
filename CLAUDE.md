@@ -6,6 +6,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Marketing site for "οι Financial Greeks" (Greek finance content brand). Greek-language single-page app with a handful of legal subpages. Built as a **client-only React SPA** with Vite, deployed as plain static files (`html` / `js` / `css`) on a regular Apache shared host. Originally a TanStack Start SSR app on Cloudflare Workers — that infrastructure was removed; see "Migration history" at the bottom if you need context.
 
+## Design source of truth: Lovable
+
+**Design decisions are made in Lovable first and then ported into this repo. Do not
+redesign here.** If you find yourself inventing a colour, a spacing value, or a layout
+in this codebase, stop — it belongs in Lovable, or the port has drifted and the fix is to
+re-port rather than to improvise.
+
+- preview (what the site is *supposed* to look like): https://financialgreeks.lovable.app
+- editor: https://lovable.dev/projects/075255f0-e483-4bc3-b5de-e925f2f5df52
+
+The two are **not** synced. Lovable publishes to its own preview domain; this repo
+publishes to `www.financialgreeks.gr`. Every Lovable change needs a manual port, and
+nothing detects drift automatically — assume the two have diverged until you have checked.
+
+### Porting a change from Lovable
+
+Read Lovable's *deployed bundle* rather than its UI. It is server-rendered, so the built
+files hand you exact values instead of eyeballed ones:
+
+```bash
+B=https://financialgreeks.lovable.app
+curl -s $B/ | command grep -oE '/assets/[A-Za-z0-9._-]+\.(css|js)' | sort -u
+curl -s $B/assets/styles-<hash>.css    # compiled :root palette, in hex
+curl -s $B/assets/Chrome-<hash>.js     # minified header/footer JSX
+```
+
+- **Colours** — the compiled CSS holds one `:root` block with the palette as hex (plus a
+  `lab()` fallback block; ignore it). Convert the hex to oklch and edit `:root` in
+  `src/styles.css`. Nothing else needs to change — the site is entirely token-driven, so
+  `:root` is the only place colours live. Round-trip your oklch back to hex and compare
+  against Lovable's before committing; a couple of units per channel is rounding, more
+  than that is a mistake.
+- **Markup** — the minified `Chrome-*.js` and per-route chunks carry the exact Tailwind
+  class strings. Copy them verbatim so the port stays faithful.
+- **Images** — Lovable's CDN re-encodes every asset to WebP no matter what `Accept`
+  header you send, and downscales it. Pull originals from the client's Drive folder
+  instead (see "Branding assets" below).
+
+**Do not port Lovable's `index.html` meta wholesale.** Some of it is wrong: `twitter:title`
+is `"FGs"` and `twitter:description` is Financial *Europeans* copy in English. The meta
+block in this repo is deliberately corrected and more complete (canonical, icon links,
+`og:url`, image dimensions, `theme-color`) — treat this repo as the source of truth for
+`<head>`, and Lovable as the source of truth for everything you can see.
+
 ## Commands
 
 - `npm run dev` — Vite dev server.
@@ -64,7 +108,12 @@ Tailwind v4 with CSS-first config in `src/styles.css` (`@import "tailwindcss"`, 
 - `public/favicon.ico` (multi-size 16→256), `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png` — all derived from the brand avatar (FG mark on white with a diagonal accent).
 - `public/og-image.png` — 1200×630 social card (logo on the brand dark background). Referenced from `index.html` by **absolute** URL (`https://www.financialgreeks.gr/og-image.png`) because social crawlers won't resolve relative ones.
 
-Masters for all of these live in the client's "Financial Greeks Γραφιστικά" Google Drive folder; the site copies are downscaled derivatives, so regenerate from the masters rather than upscaling what's in the repo.
+Masters for all of these live in the client's "Financial Greeks Γραφιστικά" Google Drive
+folder (owner `mariana@financialeuropeans.com`); the site copies are downscaled
+derivatives, so regenerate from the masters rather than upscaling what's in the repo.
+The Drive connector does not index that folder — a `parentId` search comes back empty —
+so read the file IDs off the folder page in a browser and fetch each one with
+`https://drive.usercontent.google.com/download?id=<ID>&export=download`.
 
 ### Cookie consent
 
